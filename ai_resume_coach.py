@@ -1,6 +1,7 @@
 from groq import Groq
+import os
 
-client = Groq(api_key="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")
+client = Groq(api_key="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")
 
 def _ask(system: str, user: str, max_tokens: int = 1024) -> str:
     response = client.chat.completions.create(
