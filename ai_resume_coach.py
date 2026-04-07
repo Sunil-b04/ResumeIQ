@@ -4,9 +4,12 @@ genai.configure(api_key="AIzaSyCk7H4mo6pFLYlQLKK7NCMs_dY9mCumdN0")
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 def _ask(system, user, max_tokens=1024):
-    prompt = f"{system}\n\n{user}"
-    response = model.generate_content(prompt)
-    return response.text.strip()
+    try:
+        prompt = f"{system}\n\n{user}"
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"AI Error: {str(e)}"
 
 def get_ats_feedback(resume_text, jd_text, ats_score):
     system = "You are an expert ATS specialist and resume coach. Give concise, actionable feedback in bullet points. Use emojis for clarity."
@@ -35,13 +38,13 @@ def generate_cover_letter(resume_text, jd_text, company, role):
     return _ask(system, user)
 
 def generate_interview_questions(resume_text, jd_text, role, difficulty):
-    system = "You are an expert interviewer at a top tech company. Generate exactly 5 interview questions as a numbered list only. No extra text or explanation."
+    system = "You are an expert interviewer. Generate exactly 5 interview questions as a numbered list only. No extra text."
     user = f"Generate 5 {difficulty} level interview questions for: {role}\nCandidate background: {resume_text[:1000]}\nJob context: {jd_text[:500]}"
     return _ask(system, user)
 
 def get_interview_feedback(question, answer, role):
-    system = "You are an expert interview coach. Give constructive feedback on the answer. Be specific and encouraging."
-    user = f"Role: {role}\nQuestion: {question}\nCandidate Answer: {answer}\n\nGive feedback in this format:\n⭐ Score: X/10\n✅ Strengths: (2 points)\n🔧 Improvements: (2 points)\n💡 Better approach: (1 sentence)"
+    system = "You are an expert interview coach. Give constructive feedback on the answer."
+    user = f"Role: {role}\nQuestion: {question}\nAnswer: {answer}\n\nFeedback format:\nScore: X/10\nStrengths: (2 points)\nImprovements: (2 points)\nBetter approach: (1 sentence)"
     return _ask(system, user)
 
 def chat_with_resume(message, resume_text, jd_text, chat_history, ats_score):
@@ -54,49 +57,16 @@ def recommend_career_paths(resume_text, matched_skills):
     return _ask(system, user)
 
 def estimate_salary(role, city, experience, skills):
-    system = "You are a salary expert for Indian job market. Give realistic, data-driven salary information in INR LPA."
-    user = f"""Role: {role}
-City: {city or 'India (Average)'}
-Experience: {experience} years
-Skills: {', '.join(skills[:15]) if skills else 'General'}
-
-Provide:
-1. 💰 Fresher (0-1 yr): salary range
-2. 📈 Mid-level (2-4 yr): salary range
-3. 🚀 Senior (5+ yr): salary range
-4. 🏢 Top 5 companies hiring for this role in India with their pay range
-5. 💡 One salary negotiation tip specific to this role
-6. 📊 Market demand: High / Medium / Low — with reason"""
+    system = "You are a salary expert for Indian job market. Give realistic salary information in INR LPA."
+    user = f"Role: {role}\nCity: {city or 'India'}\nExperience: {experience} years\nSkills: {', '.join(skills[:15]) if skills else 'General'}\n\nProvide fresher, mid, senior salary ranges, top 5 companies, negotiation tip, market demand."
     return _ask(system, user)
 
 def optimize_linkedin(resume_text, target_role):
-    system = "You are a LinkedIn optimization expert. Write compelling, keyword-rich LinkedIn content."
-    user = f"""Based on this resume, write optimized LinkedIn content:
-
-RESUME:
-{resume_text[:2500]}
-
-TARGET ROLE: {target_role}
-
-Provide:
-1. 🎯 Optimized LinkedIn Headline (under 220 chars, keyword-rich)
-2. 📝 About Section (3 paragraphs, first-person, ATS-optimized, engaging)
-3. 🔑 Top 10 Skills to add on LinkedIn for this target role
-4. 💼 One tip to improve LinkedIn profile visibility"""
+    system = "You are a LinkedIn optimization expert. Write compelling keyword-rich LinkedIn content."
+    user = f"RESUME:\n{resume_text[:2500]}\nTARGET ROLE: {target_role}\n\nProvide: optimized headline, about section (3 paragraphs), top 10 skills, one visibility tip."
     return _ask(system, user)
 
 def realtime_resume_tailor(resume_text, jd_text):
-    system = "You are an expert resume tailoring specialist. Rewrite resume content to perfectly match a job description."
-    user = f"""ORIGINAL RESUME:
-{resume_text[:2500]}
-
-TARGET JOB DESCRIPTION:
-{jd_text[:1500]}
-
-Provide:
-1. ✅ Tailored Professional Summary (3 sentences, JD keywords included)
-2. 🔑 Top 10 keywords from JD to add to resume
-3. 💪 3 bullet points rewritten to match JD requirements
-4. ⚠️ 3 things to remove or change in current resume
-5. 📊 Estimated ATS match improvement (current % → projected %)"""
+    system = "You are an expert resume tailoring specialist."
+    user = f"RESUME:\n{resume_text[:2500]}\n\nJOB DESCRIPTION:\n{jd_text[:1500]}\n\nProvide: tailored summary, top 10 JD keywords, 3 rewritten bullets, 3 things to remove, ATS score improvement estimate."
     return _ask(system, user)
