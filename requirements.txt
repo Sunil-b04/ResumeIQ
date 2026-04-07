@@ -1,5 +1,5 @@
 streamlit
-anthropic
+google-generativeai
 pdfminer.six
 scikit-learn
 plotly
@@ -10,5 +10,4 @@ reportlab
 requests
 beautifulsoup4
 python-dotenv
-Pillow
-groq
+Pillow.
